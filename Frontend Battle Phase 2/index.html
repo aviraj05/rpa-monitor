@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 2 Telemetry Stream Illustration</title>
+    <style>
+        body { font-family: monospace; background: #0f172a; color: #38bdf8; padding: 20px; }
+        #terminal { background: #020617; border: 1px solid #1e293b; padding: 15px; border-radius: 6px; height: 300px; overflow-y: auto; }
+        .success { color: #4ade80; }
+    </style>
+</head>
+<body>
+
+    <h1>Frontend Battle 2026: Stream Illustration</h1>
+    
+    <!-- Real-time UI snapshot widget -->
+    <div id="terminal">Initializing pipeline logs...</div>
+
+    <!-- Step 1: Inject the official hackathon pipeline script -->
+    <script src="./dataStream.js"></script>
+
+    <!-- Step 2: Inject your local harness script -->
+     <!-- Example Script -->
+    <script>
+        const terminalEl = document.getElementById('terminal');
+        let totalTicks = 0;
+
+        console.log("📡 [Harness] Connecting to global initialization hook...");
+
+        // Fire the pipeline using the path of the local CSV file
+        window.initializeRpaStream((incomingBatch) => {
+            totalTicks++;
+
+            // Example Reflection of the data footprint onto the UI viewport
+            terminalEl.innerHTML = `
+                <p class="success">✅ Connection Live: Stream active.</p>
+                <p>Total Intervals Received: <strong>${totalTicks}</strong></p>
+                <p>Latest Payload Size: <strong>${incomingBatch.length} rows</strong></p>
+                <p>Sample Row 0 ID: <span style="color: #fbbf24;">${incomingBatch[0]?.internal_uid || 'N/A'}</span></p>
+                <p>Sample Row 0 Revenue: <span style="color: #e2e8f0;">$${incomingBatch[0]?.annual_savings_usd?.toLocaleString() || 0}</span></p>
+            `;
+        }, './automation_projects.csv'); // The file path
+    </script>
+</body>
+</html>
