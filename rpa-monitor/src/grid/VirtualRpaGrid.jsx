@@ -66,10 +66,11 @@ function VirtualRpaGrid({
   density,
   onOpenAnalytics,
 }) {
-  const scrollRef  = useRef(null);
-  const spacerRef  = useRef(null);
-  const poolRef    = useRef(null);
+  const scrollRef   = useRef(null);
+  const spacerRef   = useRef(null);
+  const poolRef     = useRef(null);
   const rendererRef = useRef(null);
+  const headerRef   = useRef(null);
 
   // Derive row height from density
   const rowHeight = density === 'compact' ? 24
@@ -140,6 +141,13 @@ function VirtualRpaGrid({
     engine.addSort(field);
   }, [engine]);
 
+  // Sync horizontal scrolling between body and header
+  const handleScroll = useCallback((e) => {
+    if (headerRef.current) {
+      headerRef.current.scrollLeft = e.target.scrollLeft;
+    }
+  }, []);
+
   const sortSpec = snapshot?.sortSpec || [];
   const totalVisible = snapshot?.visibleCount ?? 0;
   const totalRows    = snapshot?.totalRows ?? 0;
@@ -173,19 +181,23 @@ function VirtualRpaGrid({
 
       {/* Column headers — React-managed for sort click handling */}
       <div
+        ref={headerRef}
         className="grid-header"
         role="row"
-        style={{ minWidth: totalColWidth }}
+        style={{ overflow: 'hidden' }}
       >
-        {columns.map(col => (
-          <ColumnHeader
-            key={col.key}
-            col={col}
-            sortSpec={sortSpec}
-            onSort={handleSort}
-            onShiftSort={handleShiftSort}
-          />
-        ))}
+        {/* Inner wrapper to enforce total width without scrolling */}
+        <div style={{ display: 'flex', minWidth: totalColWidth }}>
+          {columns.map(col => (
+            <ColumnHeader
+              key={col.key}
+              col={col}
+              sortSpec={sortSpec}
+              onSort={handleSort}
+              onShiftSort={handleShiftSort}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Scroll viewport — all row content is managed by GridDomRenderer */}
@@ -196,6 +208,7 @@ function VirtualRpaGrid({
         aria-label="RPA Projects Grid"
         aria-rowcount={totalRows}
         tabIndex={0}
+        onScroll={handleScroll}
       >
         {/* Spacer sets total scrollable height */}
         <div ref={spacerRef} className="grid-spacer" />

@@ -48,6 +48,15 @@ Chart.register(
   Title, Tooltip, Legend,
 );
 
+// ---- Custom tooltip positioner to keep tooltips off chart center ----
+Tooltip.positioners.followCursor = function(elements, eventPosition) {
+  if (!eventPosition) return false;
+  return {
+    x: eventPosition.x,
+    y: eventPosition.y - 20,
+  };
+};
+
 // ---- Global Chart.js dark theme defaults ----
 Chart.defaults.color          = '#7A9BBE';
 Chart.defaults.borderColor    = '#1E2F4A';
@@ -293,6 +302,7 @@ function IndustryDoughnut({ topIndustries }) {
           },
           tooltip: {
             ...DARK_TOOLTIP,
+            position: 'followCursor',
             callbacks: {
               label: (ctx) => {
                 const total = ctx.dataset.data.reduce((a, b) => a + b, 0);

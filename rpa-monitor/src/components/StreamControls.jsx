@@ -32,6 +32,8 @@ function StreamControls({
   onToggleColumn,
   density,
   onSetDensity,
+  exportProgress,
+  onExport,
 }) {
   const isPaused   = snapshot?.paused ?? false;
   const queueCount = snapshot?.queuedRowCount ?? 0;
@@ -107,6 +109,16 @@ function StreamControls({
           tick #{tickCount.toLocaleString()}
         </span>
       </div>
+
+      {exportProgress !== null && (
+        <>
+          <div className="topbar-divider" />
+          <div className="topbar-stream-status" style={{ color: 'var(--purple)', display: 'flex', alignItems: 'center' }}>
+            <span className="loading-spinner-gear" style={{ marginRight: 6 }}>⚙</span>
+            <span>EXPORTING: {exportProgress}%</span>
+          </div>
+        </>
+      )}
 
       <div className="topbar-divider" />
 
@@ -185,6 +197,18 @@ function StreamControls({
           </button>
         ))}
       </div>
+
+      {/* Export CSV snapshot */}
+      <button
+        className="btn btn-ghost"
+        onClick={onExport}
+        id="btn-export-csv"
+        title="Export CSV snapshot (Ctrl+Shift+E)"
+        disabled={exportProgress !== null}
+        style={{ color: exportProgress !== null ? 'var(--text-muted)' : 'var(--cyan)' }}
+      >
+        📥 Export
+      </button>
 
       {/* Command palette */}
       <button

@@ -379,6 +379,16 @@ html, body, #root {
   100% { transform: translateX(350%); }
 }
 
+/* Tiny rotating gear loader */
+.loading-spinner-gear {
+  display: inline-block;
+  animation: spinGear 2s linear infinite;
+}
+@keyframes spinGear {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 /* ---- GLOW LINE (top of panels) ---- */
 .glow-top::before {
   content: '';

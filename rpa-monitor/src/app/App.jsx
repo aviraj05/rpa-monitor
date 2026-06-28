@@ -36,6 +36,7 @@ import RowInspector       from '../components/RowInspector.jsx';
 import CommandPalette     from '../components/CommandPalette.jsx';
 import VirtualRpaGrid     from '../grid/VirtualRpaGrid.jsx';
 import AnalyticsOverlay   from '../components/AnalyticsOverlay.jsx';
+import { exportCsvInBackground } from '../utils/csvExporter.js';
 
 // ---- Singleton engine — created once ----
 const engine = new RpaStreamEngine();
@@ -56,6 +57,7 @@ export default function App() {
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [inspectorRow,       setInspectorRow]       = useState(null);
   const [showAnalytics,      setShowAnalytics]      = useState(false);
+  const [exportProgress,     setExportProgress]     = useState(null);
 
   // ---- Stream snapshot (triggers React renders) ----
   const [snapshot, setSnapshot] = useState(null);
@@ -114,6 +116,12 @@ export default function App() {
         setShowAnalytics(false);
         return;
       }
+      // Ctrl+Shift+E → direct downloadable CSV
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'e') {
+        e.preventDefault();
+        handleExport();
+        return;
+      }
       // Ctrl+F → focus search
       if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
         e.preventDefault();
@@ -164,9 +172,11 @@ export default function App() {
     if (row) setInspectorRow(row);
   }, []);
 
-  // Export filtered rows as CSV via clipboard
+  // Export filtered rows as CSV in a Web Worker (downloadable file)
   const handleExport = useCallback(() => {
-    const ids = engine.visibleIds.slice(0, 5000); // safety cap
+    if (exportProgress !== null) return;
+
+    const ids = engine.visibleIds;
     if (ids.length === 0) return;
 
     const headers = [
@@ -177,26 +187,35 @@ export default function App() {
       'start_date','completion_date',
     ];
 
-    const rows = [headers.join(',')];
-    ids.forEach(uid => {
-      const r = engine.rowsById.get(uid);
-      if (!r) return;
-      rows.push(headers.map(h => {
-        const v = String(r[h] ?? '');
-        return v.includes(',') ? `"${v}"` : v;
-      }).join(','));
-    });
+    const dataToExport = [];
+    for (let i = 0; i < ids.length; i++) {
+      const row = engine.rowsById.get(ids[i]);
+      if (row) dataToExport.push(row);
+    }
 
-    const csv = rows.join('\n');
-    navigator.clipboard.writeText(csv).then(() => {
-      // Show a brief toast — we'll use a simple title flash
-      const orig = document.title;
-      document.title = `✓ ${ids.length} rows copied to clipboard!`;
-      setTimeout(() => { document.title = orig; }, 3000);
-    }).catch(() => {
-      alert(`CSV ready (${rows.length} rows). Clipboard write failed — check browser permissions.`);
-    });
-  }, []);
+    setExportProgress(0);
+
+    exportCsvInBackground(
+      dataToExport,
+      headers,
+      (progress) => {
+        setExportProgress(progress);
+      },
+      (csvBlob) => {
+        setExportProgress(null);
+        
+        // Trigger browser file download
+        const url = URL.createObjectURL(csvBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `rpa_snapshot_${Date.now()}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+    );
+  }, [exportProgress]);
 
   // ---- Right sidebar content switcher ----
   const rightPanelTab = useRef('diag');
@@ -257,6 +276,8 @@ export default function App() {
           onToggleColumn={handleToggleColumn}
           density={density}
           onSetDensity={handleSetDensity}
+          exportProgress={exportProgress}
+          onExport={handleExport}
         />
 
         {/* KPI strip */}
