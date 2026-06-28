@@ -20,6 +20,7 @@ function StreamControls({
   snapshot,
   onPause,
   onResume,
+  onOpenAnalytics,
   onSimulateAlert,
   onOpenCommandPalette,
   onToggleLayoutMenu,
@@ -111,26 +112,36 @@ function StreamControls({
 
       {/* Pause / Play */}
       {isPaused ? (
-        <button
-          className="btn btn-green"
-          onClick={onResume}
-          id="btn-resume-stream"
-          title="Resume stream — flush queued rows"
-        >
-          ▶ Resume
-          {queueCount > 0 && (
-            <span style={{
-              background: 'rgba(255,182,39,0.2)',
-              color: 'var(--amber)',
-              borderRadius: 3,
-              padding: '0 5px',
-              fontSize: 10,
-              fontFamily: 'var(--font-mono)',
-            }}>
-              {queueCount.toLocaleString()} queued
-            </span>
-          )}
-        </button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <button
+            className="btn btn-green"
+            onClick={onResume}
+            id="btn-resume-stream"
+            title="Resume stream — flush queued rows"
+          >
+            ▶ Resume
+            {queueCount > 0 && (
+              <span style={{
+                background: 'rgba(255,182,39,0.2)',
+                color: 'var(--amber)',
+                borderRadius: 3,
+                padding: '0 5px',
+                fontSize: 10,
+                fontFamily: 'var(--font-mono)',
+              }}>
+                {queueCount.toLocaleString()} queued
+              </span>
+            )}
+          </button>
+          <button
+            className="analytics-toggle-btn"
+            onClick={onOpenAnalytics}
+            id="btn-analytics-view"
+            title="Open Chart.js visualisations for frozen dataset"
+          >
+            📊 Analytics View
+          </button>
+        </div>
       ) : (
         <button
           className="btn btn-amber"

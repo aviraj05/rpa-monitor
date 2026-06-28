@@ -35,6 +35,7 @@ import DepartmentAnalytics from '../components/DepartmentAnalytics.jsx';
 import RowInspector       from '../components/RowInspector.jsx';
 import CommandPalette     from '../components/CommandPalette.jsx';
 import VirtualRpaGrid     from '../grid/VirtualRpaGrid.jsx';
+import AnalyticsOverlay   from '../components/AnalyticsOverlay.jsx';
 
 // ---- Singleton engine — created once ----
 const engine = new RpaStreamEngine();
@@ -54,6 +55,7 @@ export default function App() {
   const [showLayoutMenu,     setShowLayoutMenu]     = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [inspectorRow,       setInspectorRow]       = useState(null);
+  const [showAnalytics,      setShowAnalytics]      = useState(false);
 
   // ---- Stream snapshot (triggers React renders) ----
   const [snapshot, setSnapshot] = useState(null);
@@ -109,6 +111,7 @@ export default function App() {
         setShowCommandPalette(false);
         setShowLayoutMenu(false);
         setInspectorRow(null);
+        setShowAnalytics(false);
         return;
       }
       // Ctrl+F → focus search
@@ -121,9 +124,11 @@ export default function App() {
     return () => document.removeEventListener('keydown', handler);
   }, []);
 
-  // ---- Handlers ----
   const handlePause  = useCallback(() => engine.pause(),  []);
-  const handleResume = useCallback(() => engine.resume(), []);
+  const handleResume = useCallback(() => {
+    engine.resume();
+    setShowAnalytics(false);
+  }, []);
 
   const handleSimulateAlert = useCallback(() => {
     engine.injectAlertRow();
@@ -213,6 +218,7 @@ export default function App() {
           onClose={() => setShowCommandPalette(false)}
           onPause={handlePause}
           onResume={handleResume}
+          onOpenAnalytics={() => setShowAnalytics(true)}
           onSimulateAlert={handleSimulateAlert}
           onTogglePanel={handleTogglePanel}
           onResetLayout={handleResetLayout}
@@ -223,6 +229,15 @@ export default function App() {
         />
       )}
 
+      {/* Analytics Overlay (Chart.js) */}
+      {showAnalytics && snapshot?.paused && (
+        <AnalyticsOverlay
+          engine={engine}
+          snapshot={snapshot}
+          onClose={() => setShowAnalytics(false)}
+        />
+      )}
+
       <div className={`app-shell density-${density}`}>
 
         {/* Top command bar */}
@@ -230,6 +245,7 @@ export default function App() {
           snapshot={snapshot}
           onPause={handlePause}
           onResume={handleResume}
+          onOpenAnalytics={() => setShowAnalytics(true)}
           onSimulateAlert={handleSimulateAlert}
           onOpenCommandPalette={() => setShowCommandPalette(true)}
           onToggleLayoutMenu={() => setShowLayoutMenu(p => !p)}
@@ -264,6 +280,7 @@ export default function App() {
               visibleColumns={colVisibility}
               onRowClick={handleRowClick}
               density={density}
+              onOpenAnalytics={() => setShowAnalytics(true)}
             />
           </div>
 

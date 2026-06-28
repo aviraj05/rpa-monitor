@@ -16,6 +16,7 @@ export function CommandPalette({
   onClose,
   onPause,
   onResume,
+  onOpenAnalytics,
   onSimulateAlert,
   onTogglePanel,
   onResetLayout,
@@ -42,6 +43,14 @@ export function CommandPalette({
       action: isPaused ? onResume : onPause,
       group: 'Stream',
     },
+    ...(isPaused ? [{
+      id: 'open_analytics',
+      icon: '📊',
+      label: 'Open Analytics View',
+      badge: 'Chart.js',
+      action: onOpenAnalytics,
+      group: 'Stream',
+    }] : []),
     {
       id: 'simulate_alert',
       icon: '⚡',

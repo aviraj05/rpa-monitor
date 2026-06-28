@@ -64,6 +64,7 @@ function VirtualRpaGrid({
   visibleColumns,
   onRowClick,
   density,
+  onOpenAnalytics,
 }) {
   const scrollRef  = useRef(null);
   const spacerRef  = useRef(null);
@@ -154,9 +155,18 @@ function VirtualRpaGrid({
       {isPaused && (
         <div className="grid-paused-banner">
           <span>⏸</span>
-          <span>
-            Stream paused — <strong>{queueCount.toLocaleString()}</strong> rows queued.
-            Click any row to inspect it.
+          <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span>
+              Stream paused — <strong>{queueCount.toLocaleString()}</strong> rows queued.
+              Click any row to inspect it.
+            </span>
+            <button
+              className="analytics-toggle-btn"
+              onClick={onOpenAnalytics}
+              title="Open Chart.js visualisations for frozen dataset"
+            >
+              📊 Analytics View
+            </button>
           </span>
         </div>
       )}
